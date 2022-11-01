@@ -1,48 +1,64 @@
-/* eslint-disable import/no-cycle */
-import Book from './modules/BookClass.js';
-import { showBooks } from './modules/ShowandRemoveBooks.js';
-import { DateTime } from './node_modules/luxon/src/luxon.js';
+import { Book } from './modules/BookModule.js';
+import { addBookToStorage, deleteBook } from './modules/BookAddAndDelete.js';
+import { showDateTime } from './modules/DateTime.js';
 
 const addTitle = document.querySelector('#addTitle');
 const addAuthor = document.querySelector('#addAuthor');
 const addForm = document.querySelector('#addBook');
+const allBooks = document.querySelector('.books');
 const listMenu = document.querySelector('#list-section');
 const addBookMenu = document.querySelector('#add-book-section');
 const contactMenu = document.querySelector('#contact-section');
 const listSection = document.querySelector('.main');
 const addBookSection = document.querySelector('.formSection');
 const contactSection = document.querySelector('.contact');
-const showCurrentTime = document.querySelector('.current-time');
 
-export const bookCollection = {
-  books: [],
-};
+let bookCollection = [];
 
 let newBook;
+let formData;
+let bookCollectionHtml;
+
+const addBtnRemoveEvent = () => {
+  document.querySelectorAll('.delete_btn').forEach((button) => button.addEventListener('click', (event) => {
+    event.preventDefault();
+    const { id } = button;
+    bookCollection = deleteBook(bookCollection, id);
+    addBookToStorage(bookCollection);
+    // eslint-disable-next-line no-use-before-define
+    showBooks();
+  }));
+};
+
+const showBooks = () => {
+  formData = JSON.parse(localStorage.getItem('storedBookData'));
+  bookCollection = formData;
+  allBooks.innerHTML = '';
+  formData.forEach((book, index) => {
+    bookCollectionHtml = document.createElement('div');
+    bookCollectionHtml.className = 'book-item';
+    bookCollectionHtml.innerHTML = `
+      <h3 class="book-title"><span>"${book.title}" by ${book.author}</span></h3>
+      <button class="delete_btn" id="${index}">Remove</button>
+    `;
+    allBooks.appendChild(bookCollectionHtml);
+  });
+
+  addBtnRemoveEvent();
+};
 
 addForm.addEventListener('submit', (event) => {
   event.preventDefault();
   newBook = new Book(addTitle.value, addAuthor.value);
+  bookCollection.push(newBook);
 
-  bookCollection.books.push(newBook);
-
-  Book.addBookToStorage();
+  addBookToStorage(bookCollection);
 
   addAuthor.value = '';
   addTitle.value = '';
 
   showBooks();
 });
-
-const showDateTime = () => {
-  // const time = new Date();
-  // const curTime = time.toUTCString();
-  // showCurrentTime.textContent = curTime;
-  const dt = DateTime.now();
-  showCurrentTime.textContent = dt
-    .toLocaleString(DateTime.DATETIME_FULL_WITH_SECONDS)
-    .slice(0, -5);
-};
 
 listMenu.addEventListener('click', (e) => {
   e.preventDefault();
@@ -67,8 +83,7 @@ contactMenu.addEventListener('click', (e) => {
 
 window.onload = () => {
   if (
-    localStorage.getItem('storedBookData') !== null
-    && localStorage.getItem('storedBookData') !== '[]'
+    localStorage.getItem('storedBookData') !== null && localStorage.getItem('storedBookData') !== '[]'
   ) {
     showBooks();
     listSection.style.display = 'block';
@@ -78,5 +93,3 @@ window.onload = () => {
 
   setInterval(showDateTime, 1000);
 };
-
-export default bookCollection;
