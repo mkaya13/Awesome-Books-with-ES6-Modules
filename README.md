@@ -1,6 +1,6 @@
 ## AWESOME BOOK WEB_APP
 
-- This is a basic website that allows users to add/remove books from a list.
+- This is a web application that allows you to add books to your booklist and see them on the user interface. This app also has localStorage feature so whenever you add any books, you will be able to see the books even if you close the website and come back again!
 
 ## Built With
 
